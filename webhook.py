@@ -27,7 +27,12 @@ def make_app(process, *, secret, header, scheme):
         if not check_signature(body,environ.get(header,""),secret,scheme):
             start_response("401 Unauthorized", [("Content-Type","application/json")]); return [b'{}']
         try:
-            result = process(json.loads(body))
+            event = json.loads(body)
+            if not isinstance(event, dict): raise ValueError("JSON object required")
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
+            start_response("400 Bad Request", [("Content-Type","application/json")]); return [b'{}']
+        try:
+            result = process(event)
             data = json.dumps({"ok":True,"decision":result}).encode()
             start_response("200 OK", [("Content-Type","application/json"),("Content-Length",str(len(data)))])
             return [data]

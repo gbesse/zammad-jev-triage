@@ -25,3 +25,14 @@ class WebhookTests(unittest.TestCase):
         self.assertEqual(calls,[])
         self.assertEqual(invoke('sha1='+hmac.new(b'secret',b'{"id":7}',hashlib.sha1).hexdigest()),'200 OK')
         self.assertEqual(calls,[{'id':7}])
+
+    def test_signed_invalid_json_is_not_retried(self):
+        calls=[]
+        app=make_app(lambda event:calls.append(event),secret='secret',header='HTTP_X_TEST',scheme='sha1')
+        for body in (b'[1]',b'{broken'):
+            statuses=[]
+            sig='sha1='+hmac.new(b'secret',body,hashlib.sha1).hexdigest()
+            env={'REQUEST_METHOD':'POST','PATH_INFO':'/webhook','CONTENT_LENGTH':str(len(body)),'wsgi.input':io.BytesIO(body),'HTTP_X_TEST':sig}
+            app(env,lambda status,headers:statuses.append(status))
+            self.assertEqual(statuses,['400 Bad Request'])
+        self.assertEqual(calls,[])
