@@ -1,6 +1,6 @@
 # Zammad Jev Triage
 
-Experimental community alpha v0.1.0 · MIT.
+Experimental community alpha v0.1.1 · MIT.
 
 ## Français
 
@@ -16,6 +16,8 @@ Variables serveur : `TYPESAFE_API_KEY, ZAMMAD_WEBHOOK_SECRET, ZAMMAD_URL, ZAMMAD
 
 Créer un webhook Zammad vers `/webhook` avec un secret HMAC SHA1 et un trigger sur les tickets entrants. Le service ignore les articles non clients et les affectations déjà correctes.
 
+Les articles internes, même marqués comme provenant d’un client, sont ignorés. Les charges JSON invalides reçoivent une réponse 400.
+
 ## English
 
 A service receives Zammad customer articles, verifies their HMAC signature, decides the team, and updates `group_id` when an explicit mapping is configured. Uncertain cases stay for review.
@@ -30,6 +32,8 @@ Server variables: `TYPESAFE_API_KEY, ZAMMAD_WEBHOOK_SECRET, ZAMMAD_URL, ZAMMAD_A
 
 Create a Zammad webhook to `/webhook` with an HMAC SHA1 secret and a trigger for incoming tickets. The service ignores non-customer articles and already-correct assignments.
 
+Internal articles are ignored even when marked as customer articles. Invalid JSON payloads receive a 400 response.
+
 ## Español
 
 Un servicio recibe artículos de clientes de Zammad, verifica la firma HMAC, decide el equipo y actualiza `group_id` cuando hay una asignación explícita. Los casos inciertos quedan para revisión.
@@ -43,6 +47,8 @@ python3 app.py
 Variables del servidor: `TYPESAFE_API_KEY, ZAMMAD_WEBHOOK_SECRET, ZAMMAD_URL, ZAMMAD_API_TOKEN, ZAMMAD_GROUP_IDS (JSON; example: {"billing":2,"technical":3})`. Mantén los secretos fuera del repositorio y de la configuración visible para usuarios.
 
 Crea un webhook de Zammad hacia `/webhook` con un secreto HMAC SHA1 y un trigger para tickets entrantes. El servicio omite artículos que no son de clientes y asignaciones ya correctas.
+
+Se omiten los artículos internos aunque estén marcados como artículos de clientes. Las cargas JSON inválidas reciben una respuesta 400.
 
 ## Verification / Vérification / Verificación
 

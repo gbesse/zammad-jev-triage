@@ -12,6 +12,10 @@ class ZammadTests(unittest.TestCase):
         event["article"]["sender"]="Agent"
         self.assertIn("skipped",process(event))
 
+    def test_internal_customer_article_is_not_routed(self):
+        event={"ticket":{"id":1,"title":"Internal note"},"article":{"sender":"Customer","internal":True,"body":"Billing"}}
+        self.assertIn("skipped",process(event,evaluate=lambda *_: self.fail("Jev must not run")))
+
     def test_ticket_update_request(self):
         from app import update_ticket
         import json

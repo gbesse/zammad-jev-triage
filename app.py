@@ -11,7 +11,7 @@ POLICY=json.loads(Path(__file__).with_name("policy.json").read_text())
 
 def process(event, *, evaluate=decide, update=None):
     ticket=event.get("ticket") or {}; article=event.get("article") or {}
-    if article.get("sender") != "Customer" or not isinstance(ticket.get("id"),int): return {"skipped":"non-customer article"}
+    if article.get("sender") != "Customer" or article.get("internal") is True or not isinstance(ticket.get("id"),int): return {"skipped":"non-public customer article"}
     clean=re.sub(r"<[^>]*>"," ",article.get("body") or "")
     text=(ticket.get("title") or "")+"\n"+html.unescape(clean)
     result=evaluate(text,POLICY,os.environ["TYPESAFE_API_KEY"])
