@@ -1,6 +1,6 @@
 # Zammad Jev Triage
 
-Experimental community alpha v0.1.1 · MIT.
+Experimental community alpha v0.1.2 · MIT.
 
 ## Français
 
@@ -16,7 +16,7 @@ Variables serveur : `TYPESAFE_API_KEY, ZAMMAD_WEBHOOK_SECRET, ZAMMAD_URL, ZAMMAD
 
 Créer un webhook Zammad vers `/webhook` avec un secret HMAC SHA1 et un trigger sur les tickets entrants. Le service ignore les articles non clients et les affectations déjà correctes.
 
-Les articles internes, même marqués comme provenant d’un client, sont ignorés. Les charges JSON invalides reçoivent une réponse 400.
+Les articles internes, même marqués comme provenant d’un client, sont ignorés. Les charges JSON invalides ou dont les champs d’article et de ticket sont mal formés reçoivent une réponse 400. Les identifiants de groupe configurés doivent être des entiers strictement positifs.
 
 ## English
 
@@ -32,7 +32,7 @@ Server variables: `TYPESAFE_API_KEY, ZAMMAD_WEBHOOK_SECRET, ZAMMAD_URL, ZAMMAD_A
 
 Create a Zammad webhook to `/webhook` with an HMAC SHA1 secret and a trigger for incoming tickets. The service ignores non-customer articles and already-correct assignments.
 
-Internal articles are ignored even when marked as customer articles. Invalid JSON payloads receive a 400 response.
+Internal articles are ignored even when marked as customer articles. Invalid JSON and malformed ticket or article fields receive a 400 response. Configured group IDs must be positive integers.
 
 ## Español
 
@@ -48,7 +48,7 @@ Variables del servidor: `TYPESAFE_API_KEY, ZAMMAD_WEBHOOK_SECRET, ZAMMAD_URL, ZA
 
 Crea un webhook de Zammad hacia `/webhook` con un secreto HMAC SHA1 y un trigger para tickets entrantes. El servicio omite artículos que no son de clientes y asignaciones ya correctas.
 
-Se omiten los artículos internos aunque estén marcados como artículos de clientes. Las cargas JSON inválidas reciben una respuesta 400.
+Se omiten los artículos internos aunque estén marcados como artículos de clientes. El JSON inválido y los campos de ticket o artículo mal formados reciben una respuesta 400. Los identificadores de grupo configurados deben ser enteros positivos.
 
 ## Verification / Vérification / Verificación
 
