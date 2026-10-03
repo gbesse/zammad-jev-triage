@@ -6,20 +6,26 @@ import re
 from pathlib import Path
 from urllib.request import Request, urlopen
 from jev_core import decide
-from webhook import make_app, serve
+from webhook import InvalidEvent, make_app, serve
 POLICY=json.loads(Path(__file__).with_name("policy.json").read_text())
 
 def process(event, *, evaluate=decide, update=None):
-    ticket=event.get("ticket") or {}; article=event.get("article") or {}
-    if article.get("sender") != "Customer" or article.get("internal") is True or not isinstance(ticket.get("id"),int): return {"skipped":"non-public customer article"}
-    clean=re.sub(r"<[^>]*>"," ",article.get("body") or "")
-    text=(ticket.get("title") or "")+"\n"+html.unescape(clean)
+    ticket=event.get("ticket",{}); article=event.get("article",{})
+    if not isinstance(ticket,dict) or not isinstance(article,dict): raise InvalidEvent("ticket and article must be objects")
+    ticket_id=ticket.get("id")
+    if article.get("sender") != "Customer" or article.get("internal") is True or not isinstance(ticket_id,int) or isinstance(ticket_id,bool) or ticket_id < 1: return {"skipped":"non-public customer article"}
+    body=article.get("body") or ""
+    title=ticket.get("title") or ""
+    if not isinstance(body,str) or not isinstance(title,str): raise InvalidEvent("title and body must be strings")
+    clean=re.sub(r"<[^>]*>"," ",body)
+    text=title+"\n"+html.unescape(clean)
     result=evaluate(text,POLICY,os.environ["TYPESAFE_API_KEY"])
     groups=json.loads(os.environ.get("ZAMMAD_GROUP_IDS","{}"))
     group=groups.get(result["outcome"])
-    if group is not None and group != ticket.get("group_id"):
-        if not isinstance(group,int): raise ValueError("group IDs must be integers")
-        (update or update_ticket)(ticket["id"],group)
+    if group is not None:
+        if not isinstance(group,int) or isinstance(group,bool) or group < 1: raise ValueError("group IDs must be positive integers")
+        if group != ticket.get("group_id"):
+            (update or update_ticket)(ticket_id,group)
     return result
 
 def update_ticket(ticket_id,group_id):

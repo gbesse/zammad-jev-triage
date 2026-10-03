@@ -4,7 +4,7 @@ import hmac
 import io
 import json
 import unittest
-from webhook import check_signature, make_app
+from webhook import InvalidEvent, check_signature, make_app
 class WebhookTests(unittest.TestCase):
     def test_signatures(self):
         raw=b'{}'; secret='secret'
@@ -36,3 +36,14 @@ class WebhookTests(unittest.TestCase):
             app(env,lambda status,headers:statuses.append(status))
             self.assertEqual(statuses,['400 Bad Request'])
         self.assertEqual(calls,[])
+
+    def test_signed_invalid_event_is_not_retried(self):
+        body=b'{"article":[]}'
+        def reject(_event):
+            raise InvalidEvent("invalid article")
+        app=make_app(reject,secret='secret',header='HTTP_X_TEST',scheme='sha1')
+        signature='sha1='+hmac.new(b'secret',body,hashlib.sha1).hexdigest()
+        statuses=[]
+        env={'REQUEST_METHOD':'POST','PATH_INFO':'/webhook','CONTENT_LENGTH':str(len(body)),'wsgi.input':io.BytesIO(body),'HTTP_X_TEST':signature}
+        app(env,lambda status,headers:statuses.append(status))
+        self.assertEqual(statuses,['400 Bad Request'])

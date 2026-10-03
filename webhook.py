@@ -8,6 +8,9 @@ from wsgiref.simple_server import make_server
 
 MAX_BODY = 1024 * 1024
 
+class InvalidEvent(ValueError):
+    """A signed request has an unusable event shape."""
+
 def check_signature(body, supplied, secret, scheme):
     if not secret or not supplied: return False
     if scheme == "sha1": expected = "sha1=" + hmac.new(secret.encode(),body,hashlib.sha1).hexdigest()
@@ -36,6 +39,8 @@ def make_app(process, *, secret, header, scheme):
             data = json.dumps({"ok":True,"decision":result}).encode()
             start_response("200 OK", [("Content-Type","application/json"),("Content-Length",str(len(data)))])
             return [data]
+        except InvalidEvent:
+            start_response("400 Bad Request", [("Content-Type","application/json")]); return [b'{}']
         except Exception:
             # Let the source retry. Never return a successful decision on model or API errors.
             start_response("503 Service Unavailable", [("Content-Type","application/json")]); return [b'{"ok":false}']
